@@ -214,7 +214,7 @@ class VariationalAutoencoder():
         checkpoint1 = ModelCheckpoint(checkpoint_filepath, save_weights_only = True, verbose=1)
         checkpoint2 = ModelCheckpoint(os.path.join(run_folder, 'weights/weights.h5'), save_weights_only = True, verbose=1)
 
-        callbacks_list = [checkpoint1, checkpoint2, custom_callback, lr_sched]
+        callbacks_list = [checkpoint2, custom_callback, lr_sched]
 
         self.model.fit(     
             x_train
