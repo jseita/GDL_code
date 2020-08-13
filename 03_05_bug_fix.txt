@@ -1,0 +1,78 @@
+vae.train_with_generator(     
+    data_flow
+    , epochs = EPOCHS
+    , steps_per_epoch = NUM_IMAGES / BATCH_SIZE
+    , run_folder = RUN_FOLDER
+    , print_every_n_batches = PRINT_EVERY_N_BATCHES
+    , initial_epoch = INITIAL_EPOCH
+)
+
+Epoch 1/200
+   1/6331 [..............................] - ETA: 0s - loss: 899.4191 - reconstruction_loss: 899.1124 - kl_loss: 0.3066WARNING:tensorflow:Method (on_train_batch_end) is slow compared to the batch update (0.181250). Check your callbacks.
+6331/6331 [============================>.] - ETA: 0s - loss: 242.5610 - reconstruction_loss: 183.0493 - kl_loss: 59.5118
+
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+<ipython-input-11-6b00e1cc66a8> in <module>
+      5     , run_folder = RUN_FOLDER
+      6     , print_every_n_batches = PRINT_EVERY_N_BATCHES
+----> 7     , initial_epoch = INITIAL_EPOCH
+      8 )
+
+~/GDL_code/models/VAE.py in train_with_generator(self, data_flow, epochs, steps_per_epoch, run_folder, print_every_n_batches, initial_epoch, lr_decay)
+    249             , initial_epoch = initial_epoch
+    250             , callbacks = callbacks_list
+--> 251             , steps_per_epoch=steps_per_epoch
+    252             )
+    253 
+
+~/.pyenv/versions/3.6.11/envs/gdl_env/lib/python3.6/site-packages/tensorflow/python/keras/engine/training.py in _method_wrapper(self, *args, **kwargs)
+     64   def _method_wrapper(self, *args, **kwargs):
+     65     if not self._in_multi_worker_mode():  # pylint: disable=protected-access
+---> 66       return method(self, *args, **kwargs)
+     67 
+     68     # Running inside `run_distribute_coordinator` already.
+
+~/.pyenv/versions/3.6.11/envs/gdl_env/lib/python3.6/site-packages/tensorflow/python/keras/engine/training.py in fit(self, x, y, batch_size, epochs, verbose, callbacks, validation_split, validation_data, shuffle, class_weight, sample_weight, initial_epoch, steps_per_epoch, validation_steps, validation_batch_size, validation_freq, max_queue_size, workers, use_multiprocessing)
+    853                 context.async_wait()
+    854               logs = tmp_logs  # No error, now safe to assign to logs.
+--> 855               callbacks.on_train_batch_end(step, logs)
+    856         epoch_logs = copy.copy(logs)
+    857 
+
+~/.pyenv/versions/3.6.11/envs/gdl_env/lib/python3.6/site-packages/tensorflow/python/keras/callbacks.py in on_train_batch_end(self, batch, logs)
+    388     if self._should_call_train_batch_hooks:
+    389       logs = self._process_logs(logs)
+--> 390       self._call_batch_hook(ModeKeys.TRAIN, 'end', batch, logs=logs)
+    391 
+    392   def on_test_batch_begin(self, batch, logs=None):
+
+~/.pyenv/versions/3.6.11/envs/gdl_env/lib/python3.6/site-packages/tensorflow/python/keras/callbacks.py in _call_batch_hook(self, mode, hook, batch, logs)
+    296     for callback in self.callbacks:
+    297       batch_hook = getattr(callback, hook_name)
+--> 298       batch_hook(batch, logs)
+    299     self._delta_ts[hook_name].append(time.time() - t_before_callbacks)
+    300 
+
+~/.pyenv/versions/3.6.11/envs/gdl_env/lib/python3.6/site-packages/tensorflow/python/keras/callbacks.py in on_train_batch_end(self, batch, logs)
+    882 
+    883   def on_train_batch_end(self, batch, logs=None):
+--> 884     self._batch_update_progbar(logs)
+    885 
+    886   def on_test_batch_end(self, batch, logs=None):
+
+~/.pyenv/versions/3.6.11/envs/gdl_env/lib/python3.6/site-packages/tensorflow/python/keras/callbacks.py in _batch_update_progbar(self, logs)
+    926     add_seen = num_steps if self.use_steps else num_steps * batch_size
+    927     self.seen += add_seen
+--> 928     self.progbar.update(self.seen, list(logs.items()), finalize=False)
+    929 
+    930   def _finalize_progbar(self, logs):
+
+~/.pyenv/versions/3.6.11/envs/gdl_env/lib/python3.6/site-packages/tensorflow/python/keras/utils/generic_utils.py in update(self, current, values, finalize)
+    570           self._values[k] = [v * value_base, value_base]
+    571         else:
+--> 572           self._values[k][0] += v * value_base
+    573           self._values[k][1] += value_base
+    574       else:
+
+ValueError: operands could not be broadcast together with shapes (32,) (7,) (32,) 
