@@ -242,15 +242,26 @@ class VariationalAutoencoder():
         self.model.save_weights(os.path.join(run_folder, 'weights/weights.h5'))
 
 
-        self.model.fit_generator(
-            data_flow
-            , shuffle = True
-            , epochs = epochs
-            , initial_epoch = initial_epoch
-            , callbacks = callbacks_list
-            , steps_per_epoch=steps_per_epoch 
-            )
+        try:
+            self.model.fit(
+                data_flow
+                , shuffle = True
+                , epochs = epochs
+                , initial_epoch = initial_epoch
+                , callbacks = callbacks_list
+                , steps_per_epoch=steps_per_epoch 
+                )
 
+
+        except:
+            self.model.fit(
+                data_flow
+                , shuffle = True
+                , epochs = epochs
+                , initial_epoch = initial_epoch
+                , callbacks = callbacks_list
+                , steps_per_epoch=steps_per_epoch 
+                )
 
 
 
