@@ -85,95 +85,99 @@ class GAN():
 
     def _build_discriminator(self):
 
-        ### THE discriminator
-        discriminator_input = Input(shape=self.input_dim, name='discriminator_input')
-
-        x = discriminator_input
-
-        for i in range(self.n_layers_discriminator):
-
-            x = Conv2D(
-                filters = self.discriminator_conv_filters[i]
-                , kernel_size = self.discriminator_conv_kernel_size[i]
-                , strides = self.discriminator_conv_strides[i]
-                , padding = 'same'
-                , name = 'discriminator_conv_' + str(i)
-                , kernel_initializer = self.weight_init
-                )(x)
-
-            if self.discriminator_batch_norm_momentum and i > 0:
-                x = BatchNormalization(momentum = self.discriminator_batch_norm_momentum)(x)
-
-            x = self.get_activation(self.discriminator_activation)(x)
-
-            if self.discriminator_dropout_rate:
-                x = Dropout(rate = self.discriminator_dropout_rate)(x)
-
-        x = Flatten()(x)
-        
-        discriminator_output = Dense(1, activation='sigmoid', kernel_initializer = self.weight_init)(x)
-
-        self.discriminator = Model(discriminator_input, discriminator_output)
+        with tensorflow.distribute.MirroredStrategy().scope():
+    
+            ### THE discriminator
+            discriminator_input = Input(shape=self.input_dim, name='discriminator_input')
+    
+            x = discriminator_input
+    
+            for i in range(self.n_layers_discriminator):
+    
+                x = Conv2D(
+                    filters = self.discriminator_conv_filters[i]
+                    , kernel_size = self.discriminator_conv_kernel_size[i]
+                    , strides = self.discriminator_conv_strides[i]
+                    , padding = 'same'
+                    , name = 'discriminator_conv_' + str(i)
+                    , kernel_initializer = self.weight_init
+                    )(x)
+    
+                if self.discriminator_batch_norm_momentum and i > 0:
+                    x = BatchNormalization(momentum = self.discriminator_batch_norm_momentum)(x)
+    
+                x = self.get_activation(self.discriminator_activation)(x)
+    
+                if self.discriminator_dropout_rate:
+                    x = Dropout(rate = self.discriminator_dropout_rate)(x)
+    
+            x = Flatten()(x)
+            
+            discriminator_output = Dense(1, activation='sigmoid', kernel_initializer = self.weight_init)(x)
+    
+            self.discriminator = Model(discriminator_input, discriminator_output)
 
 
     def _build_generator(self):
 
-        ### THE generator
-
-        generator_input = Input(shape=(self.z_dim,), name='generator_input')
-
-        x = generator_input
-
-        x = Dense(np.prod(self.generator_initial_dense_layer_size), kernel_initializer = self.weight_init)(x)
-
-        if self.generator_batch_norm_momentum:
-            x = BatchNormalization(momentum = self.generator_batch_norm_momentum)(x)
-
-        x = self.get_activation(self.generator_activation)(x)
-
-        x = Reshape(self.generator_initial_dense_layer_size)(x)
-
-        if self.generator_dropout_rate:
-            x = Dropout(rate = self.generator_dropout_rate)(x)
-
-        for i in range(self.n_layers_generator):
-
-            if self.generator_upsample[i] == 2:
-                x = UpSampling2D()(x)
-                x = Conv2D(
-                    filters = self.generator_conv_filters[i]
-                    , kernel_size = self.generator_conv_kernel_size[i]
-                    , padding = 'same'
-                    , name = 'generator_conv_' + str(i)
-                    , kernel_initializer = self.weight_init
-                )(x)
-            else:
-
-                x = Conv2DTranspose(
-                    filters = self.generator_conv_filters[i]
-                    , kernel_size = self.generator_conv_kernel_size[i]
-                    , padding = 'same'
-                    , strides = self.generator_conv_strides[i]
-                    , name = 'generator_conv_' + str(i)
-                    , kernel_initializer = self.weight_init
+        with tensorflow.distribute.MirroredStrategy().scope():
+    
+            ### THE generator
+    
+            generator_input = Input(shape=(self.z_dim,), name='generator_input')
+    
+            x = generator_input
+    
+            x = Dense(np.prod(self.generator_initial_dense_layer_size), kernel_initializer = self.weight_init)(x)
+    
+            if self.generator_batch_norm_momentum:
+                x = BatchNormalization(momentum = self.generator_batch_norm_momentum)(x)
+    
+            x = self.get_activation(self.generator_activation)(x)
+    
+            x = Reshape(self.generator_initial_dense_layer_size)(x)
+    
+            if self.generator_dropout_rate:
+                x = Dropout(rate = self.generator_dropout_rate)(x)
+    
+            for i in range(self.n_layers_generator):
+    
+                if self.generator_upsample[i] == 2:
+                    x = UpSampling2D()(x)
+                    x = Conv2D(
+                        filters = self.generator_conv_filters[i]
+                        , kernel_size = self.generator_conv_kernel_size[i]
+                        , padding = 'same'
+                        , name = 'generator_conv_' + str(i)
+                        , kernel_initializer = self.weight_init
                     )(x)
-
-            if i < self.n_layers_generator - 1:
-
-                if self.generator_batch_norm_momentum:
-                    x = BatchNormalization(momentum = self.generator_batch_norm_momentum)(x)
-
-                x = self.get_activation(self.generator_activation)(x)
+                else:
+    
+                    x = Conv2DTranspose(
+                        filters = self.generator_conv_filters[i]
+                        , kernel_size = self.generator_conv_kernel_size[i]
+                        , padding = 'same'
+                        , strides = self.generator_conv_strides[i]
+                        , name = 'generator_conv_' + str(i)
+                        , kernel_initializer = self.weight_init
+                        )(x)
+    
+                if i < self.n_layers_generator - 1:
+    
+                    if self.generator_batch_norm_momentum:
+                        x = BatchNormalization(momentum = self.generator_batch_norm_momentum)(x)
+    
+                    x = self.get_activation(self.generator_activation)(x)
+                        
                     
-                
-            else:
-
-                x = Activation('tanh')(x)
-
-
-        generator_output = x
-
-        self.generator = Model(generator_input, generator_output)
+                else:
+    
+                    x = Activation('tanh')(x)
+    
+    
+            generator_output = x
+    
+            self.generator = Model(generator_input, generator_output)
 
        
     def get_opti(self, lr):
