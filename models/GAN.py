@@ -1,3 +1,4 @@
+import tensorflow as tf
 
 from tensorflow.keras.layers import Input, Conv2D, Flatten, Dense, Conv2DTranspose, Reshape, Lambda, Activation, BatchNormalization, LeakyReLU, Dropout, ZeroPadding2D, UpSampling2D
 
@@ -85,7 +86,7 @@ class GAN():
 
     def _build_discriminator(self):
 
-        with tensorflow.distribute.MirroredStrategy().scope():
+        with tf.distribute.MirroredStrategy().scope():
     
             ### THE discriminator
             discriminator_input = Input(shape=self.input_dim, name='discriminator_input')
@@ -120,7 +121,7 @@ class GAN():
 
     def _build_generator(self):
 
-        with tensorflow.distribute.MirroredStrategy().scope():
+        with tf.distribute.MirroredStrategy().scope():
     
             ### THE generator
     
